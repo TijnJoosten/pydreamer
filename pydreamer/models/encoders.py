@@ -47,7 +47,7 @@ class MultiEncoder(nn.Module):
         embeds = []
 
         if self.encoder_image:
-            image = obs['image'] - new_output
+            image = obs['image']
             T, B, C, H, W = image.shape
             if self.reward_input:
                 reward = obs['reward']

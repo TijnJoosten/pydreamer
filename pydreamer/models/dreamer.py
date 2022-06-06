@@ -224,7 +224,7 @@ class WorldModel(nn.Module):
         self.decoder = MultiDecoder(features_dim, conf)
 
         
-        self.newcnn = NewCNN(in_channels=conf.image_channels, cnn_depth=conf.cnn_depth)
+        # self.newcnn = NewCNN(in_channels=conf.image_channels, cnn_depth=conf.cnn_depth)
 
         # RSSM
 
@@ -273,7 +273,8 @@ class WorldModel(nn.Module):
         # print(sum(p.numel() for p in self.encoder.parameters()))
         # print(sum(p.numel() for p in self.encoder.parameters() if p.requires_grad))
 
-        new_output = self.newcnn(obs['image'])
+        # new_output = self.newcnn(obs['image'])
+        new_output = None
 
         # Encoder
 

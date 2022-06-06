@@ -152,35 +152,28 @@ class ConvDecoder(nn.Module):
             nn.ConvTranspose2d(d, out_channels, kernels[3], stride))
 
         self.iter = 0
-        self.picture_every = 100
+        self.picture_every = 1000
 
     def forward(self, x: Tensor, p: Tensor = None) -> Tensor:
         x, bd = flatten_batch(x)
         y = self.model(x)
-        if p is not None:
-            p, bd_p = flatten_batch(p, 3)
-            combined_y = y + p
-            combined_y = unflatten_batch(combined_y, bd)
         y = unflatten_batch(y, bd)
 
-        if p is not None:
-            self.iter += 1
-            if self.iter == self.picture_every:
-                try:
-                    print("Creating pictures decoder")
-                    fig, (ax1, ax2) = plt.subplots(1,2)
-                    ax1.imshow(np.clip(combined_y.cpu().detach().numpy().astype('float64')[0][0][0].transpose((1,2,0)), 0, 1), interpolation='nearest')
-                    ax1.set_title("Combined output")
-                    ax2.imshow(np.clip(y.cpu().detach().numpy().astype('float64')[0][0][0].transpose((1,2,0)), 0, 1), interpolation='nearest')
-                    ax2.set_title("decoder output")
-                    plt.savefig('pictures/decoder_output.png')
-                    plt.close(fig)
-                    self.iter = 0
-                except:
-                    pass
+        self.iter += 1
+        if self.iter == self.picture_every:
+            try:
+                print("Creating pictures decoder")
+                fig, (ax1, ax2) = plt.subplots(1,2)
+                # ax1.imshow(np.clip(combined_y.cpu().detach().numpy().astype('float64')[0][0][0].transpose((1,2,0)), 0, 1), interpolation='nearest')
+                # ax1.set_title("Combined output")
+                ax2.imshow(np.clip(y.cpu().detach().numpy().astype('float64')[0][0][0].transpose((1,2,0)), 0, 1), interpolation='nearest')
+                ax2.set_title("decoder output")
+                plt.savefig('pictures/decoder_output.png')
+                plt.close(fig)
+                self.iter = 0
+            except:
+                self.iter = 0
 
-        if p is not None:
-            return combined_y
         return y
 
     def loss(self, output: Tensor, target: Tensor) -> Tensor:
