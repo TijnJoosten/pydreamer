@@ -15,7 +15,7 @@ from .common import *
 
 class NewCNN(nn.Module):
 
-    def __init__(self, in_channels=3, cnn_depth=32, activation=nn.ReLU):
+    def __init__(self, in_channels=3, cnn_depth=32, activation=nn.ELU):
         super().__init__()
         self.out_dim = cnn_depth * 32
         kernels = (3, 3, 4, 4)
@@ -37,6 +37,7 @@ class NewCNN(nn.Module):
         self.model_3d = nn.Sequential(
             nn.Conv3d(self.hist_size, d, kernels[0], stride, bias=False),
             # nn.BatchNorm3d(d),
+            nn.InstanceNorm3d(d),
             activation(),
             nn.ConvTranspose3d(d, 1, kernels[1], stride=2, bias=False),
             nn.ReflectionPad3d((1, 0, 1, 0, 0, 0)),
@@ -62,16 +63,16 @@ class NewCNN(nn.Module):
             self.hist[0] = self.last_input
 
         # combined_history = torch.cat(self.hist, -3)
-        # combined_history = torch.stack(self.hist, 2)
-        # combined_history, bd = flatten_batch(combined_history, 4)
-        # mean = combined_history.mean(dim=[0, 1])
-        mean = self.hist[0]
-        cnn_out = x
-        # cnn_out = self.model_3d(combined_history)
-        # cnn_out = unflatten_batch(cnn_out, bd)
-        # cnn_out = torch.squeeze(cnn_out)
-        # y = mean + cnn_out
-        y = mean
+        combined_history = torch.stack(self.hist, 2)
+        combined_history, bd = flatten_batch(combined_history, 4)
+        mean = combined_history.mean(dim=[0, 1])
+        # mean = self.hist[0]
+        # cnn_out = x
+        cnn_out = self.model_3d(combined_history)
+        cnn_out = unflatten_batch(cnn_out, bd)
+        cnn_out = torch.squeeze(cnn_out)
+        y = mean + cnn_out
+        # y = mean
         # combined_history = torch.stack(self.hist, 2)
         # combined_history, bd = flatten_batch(combined_history, 4)
         # y = self.model(combined_history)
@@ -94,9 +95,13 @@ class NewCNN(nn.Module):
             try: 
                 ax2.imshow(np.clip(mean.cpu().detach().numpy().astype('float64')[0][0].transpose((1,2,0)), 0, 1), interpolation='nearest')
                 ax2.set_title("mean")
-            except Exception as e:
-                print("found error while creating pictures mean:")
-                print(e)
+            except:
+                try:
+                    ax2.imshow(np.clip(mean.cpu().detach().numpy().astype('float64').transpose((1,2,0)), 0, 1), interpolation='nearest')
+                    ax2.set_title("mean (err)")
+                except Exception as e:
+                    print("found error while creating pictures mean:")
+                    print(e)
             try: 
                 ax3.imshow(np.clip(y.cpu().detach().numpy().astype('float64')[0][0].transpose((1,2,0)), 0, 1), interpolation='nearest')
                 ax3.set_title("y out 1")
