@@ -73,7 +73,7 @@ class NewCNN(nn.Module):
         cnn_out = unflatten_batch(cnn_out, bd)
         cnn_out = torch.squeeze(cnn_out)
         y = mean + cnn_out
-        # y = mean
+        y = mean
         # combined_history = torch.stack(self.hist, 2)
         # combined_history, bd = flatten_batch(combined_history, 4)
         # y = self.model(combined_history)
